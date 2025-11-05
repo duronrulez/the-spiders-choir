@@ -177,7 +177,7 @@
       };
       
       // Initial staggered start
-      const initialDelay = (i * 2) + (Math.random() * .8); // stagger + small jitter
+      const initialDelay = 60 + (i * 2) + (Math.random() * .8); // stagger + small jitter
       setTimeout(() => startAnimation(poly), initialDelay * 1000);
       
     } catch(e) { /* ignore if styling fails */ }
