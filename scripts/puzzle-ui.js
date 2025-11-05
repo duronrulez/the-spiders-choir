@@ -11,11 +11,11 @@
   // Define the clickable areas as polygons with absolute coordinates
   const polygons = [
     // Example polygons - replace with your actual coordinates
-    [[343,599], [360,688], [299,779], [325, 835], [428, 700], [388, 570]], // First area
-    [[409,326], [603,448], [723,330], [758,352],  [688,433], [604,488], [481,453],[383,361]], // Second area
-    [[1256,983], [1352,886], [1393,700], [1347,560], [1395,548], [1427,780], [1381,921], [1302,1015]], // Third area
-    [[1673,850], [1744,719], [1862,540], [1905,563], [1819,709], [1713,891]], // Fourth area
-    [[1622,352], [1750,117], [1854,15], [1905,40], [1800,164], [1666,374]]  // Fifth area
+    [[343,469], [360,558], [299,649], [325, 705], [428, 570], [388, 440]], // First area
+    [[409,206], [603,328], [723,210], [758,232],  [688,313], [604,368], [481,333],[383,241]], // Second area
+    [[1236,863], [1332,766], [1373,580], [1327,440], [1375,428], [1407,660], [1361,801], [1282,895]], // Third area
+    [[1633,730], [1704,599], [1822,420], [1865,443], [1779,589], [1673,771]], // Fourth area
+    [[1582,252], [1710,7], [1814,-75], [1865,-60], [1760,64], [1626,274]]  // Fifth area
   ];
 
   // Note names in the same order as the puzzle's note map
@@ -43,15 +43,29 @@
   // Helper: update SVG size to match image
   function updateSVGSize(){
     if(!img) return;
+    
+    // Get the actual image dimensions (1920x1080)
+    const IMAGE_WIDTH = 1920;
+    const IMAGE_HEIGHT = 1080;
+    
+    // Get current image display size while maintaining aspect ratio
     const imgRect = img.getBoundingClientRect();
+    
+    // Set SVG to match the actual displayed image size
     svg.setAttribute('width', imgRect.width);
     svg.setAttribute('height', imgRect.height);
-    // Set viewBox to match image dimensions for 1:1 coordinate mapping
-    svg.setAttribute('viewBox', `0 0 ${imgRect.width} ${imgRect.height}`);
+    
+    // Critical: Set viewBox to the original image dimensions
+    // This ensures polygon coordinates (based on 1920x1080) map correctly
+    svg.setAttribute('viewBox', `0 0 ${IMAGE_WIDTH} ${IMAGE_HEIGHT}`);
+    
     // Position SVG to exactly cover the image
     svg.style.position = 'absolute';
-    svg.style.left = (imgRect.left - container.getBoundingClientRect().left) + 'px';
-    svg.style.top = (imgRect.top - container.getBoundingClientRect().top) + 'px';
+    svg.style.left = '50%';
+    svg.style.top = '50%';
+    svg.style.width = imgRect.width + 'px';
+    svg.style.height = imgRect.height + 'px';
+    svg.style.transform = 'translate(-50%, -50%)';
   }
 
   // Update SVG size on resize and when the image loads
