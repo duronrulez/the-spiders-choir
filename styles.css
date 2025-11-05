@@ -1,0 +1,25 @@
+/* Simple centering and responsive image */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:Segoe UI, Roboto, Arial, sans-serif;display:flex;align-items:center;justify-content:center;padding:2rem;background:#f3f4f6;color:#111}
+.image-wrap{margin-top:1rem;background:#fff;border:1px solid #e5e7eb;padding:1rem;border-radius:8px}
+#forest-img{max-width:100%;height:auto;display:block;margin:0 auto}
+
+/* Lightning / strike effect */
+#flash{position:fixed;inset:0;pointer-events:none;background:#fff;opacity:0;z-index:9999;mix-blend-mode:normal}
+.flash-on{animation:lightning 260ms linear}
+
+@keyframes lightning{
+  0%{opacity:0}
+  8%{opacity:.45}
+  20%{opacity:.35}
+  40%{opacity:0}
+  100%{opacity:0}
+}
+
+/* brief, subtle image brightness boost during a strike */
+#forest-img.strike{filter:brightness(1.2) saturate(1.05) contrast(1.02);transition:filter 90ms ease-out}
+
+/* small rain toggle button */
+.rain-toggle{position:fixed;right:16px;bottom:16px;background:rgba(0,0,0,0.6);color:#fff;border:0;padding:8px 10px;border-radius:8px;font-size:14px;cursor:pointer;z-index:10000;opacity:0.9}
+.rain-toggle:focus{outline:2px solid #9ad0ff}
