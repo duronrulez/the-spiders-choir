@@ -1,9 +1,12 @@
 /* Simple centering and responsive image */
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{font-family:Segoe UI, Roboto, Arial, sans-serif;display:flex;align-items:center;justify-content:center;padding:2rem;background:#f3f4f6;color:#111}
-.image-wrap{margin-top:1rem;background:#fff;border:1px solid #e5e7eb;padding:1rem;border-radius:8px}
-#forest-img{max-width:100%;height:auto;display:block;margin:0 auto}
+/* Make the image container cover the full viewport so the forest is fullscreen */
+body{font-family:Segoe UI, Roboto, Arial, sans-serif;margin:0;padding:0;background:#000;color:#111}
+.image-wrap{position:fixed;inset:0;display:block;z-index:1;overflow:hidden;background:#000}
+#forest-img{width:100vw;height:100vh;object-fit:cover;display:block}
+/* Prevent the main image from being draggable/selected which interferes with UI interactions */
+#forest-img{ -webkit-user-drag: none; user-drag: none; user-select: none; -webkit-user-select: none; }
 
 /* Lightning / strike effect */
 #flash{position:fixed;inset:0;pointer-events:none;background:#fff;opacity:0;z-index:9999;mix-blend-mode:normal}
@@ -20,6 +23,125 @@ body{font-family:Segoe UI, Roboto, Arial, sans-serif;display:flex;align-items:ce
 /* brief, subtle image brightness boost during a strike */
 #forest-img.strike{filter:brightness(1.2) saturate(1.05) contrast(1.02);transition:filter 90ms ease-out}
 
-/* small rain toggle button */
-.rain-toggle{position:fixed;right:16px;bottom:16px;background:rgba(0,0,0,0.6);color:#fff;border:0;padding:8px 10px;border-radius:8px;font-size:14px;cursor:pointer;z-index:10000;opacity:0.9}
+/* floating controls container (stacks small buttons) */
+.floating-controls{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:10000}
+
+/* small floating button (used by rain/puzzle toggles) */
+.rain-toggle{background:rgba(0,0,0,0.6);color:#fff;border:0;padding:8px 10px;border-radius:8px;font-size:14px;cursor:pointer;opacity:0.95}
 .rain-toggle:focus{outline:2px solid #9ad0ff}
+
+/* spider eyes overlay */
+.image-wrap{position:relative}
+.spider-eyes{position:absolute;inset:0;pointer-events:none;z-index:100}
+.eye-pair{
+  position:absolute;
+  width:25px;
+  height:12px;
+  background:url('eyes_small.png') no-repeat center center;
+  background-size:contain;
+  opacity:0;
+  transition:opacity 400ms ease-in-out,left 2s ease-in-out,top 2s ease-in-out;
+  pointer-events:none;
+}
+.eye-pair.visible {
+  opacity: 0.8;
+  transition: opacity 2s ease-in-out;
+}
+.eye-pair.fade-out {
+  opacity: 0;
+}
+.eye-pair.blink {
+  animation: blink 180ms ease-in-out;
+}
+
+@keyframes blink {
+  0% {opacity: 0.8}
+  50% {opacity: 0}
+  100% {opacity: 0.8}
+}
+
+/* Puzzle clickable sprites overlay */
+.puzzle-sprites{
+  position:absolute;
+  inset:0;
+  z-index:60;
+  pointer-events:none;
+}
+.puzzle-sprite{
+  position:absolute;
+  width:96px;height:96px;
+  pointer-events:auto;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transform-origin:center;
+}
+.puzzle-sprite polygon,
+/* also target polygons that have the class directly (we set the class on the polygon element) */
+.puzzle-sprite {
+  /* default: invisible fill so polygons don't block the image visually */
+  fill: rgba(154,208,255,0);
+  stroke: none;
+  stroke-width: 0;
+  vector-effect: non-scaling-stroke;
+  transition: fill 0.2s, stroke 0.2s;
+}
+.puzzle-sprite:hover,
+.puzzle-sprite:hover polygon{
+  stroke: rgba(255,255,255,0.15);
+  fill: rgba(154,208,255,0.12);
+}
+.puzzle-sprite:focus{
+  outline:none;
+}
+.puzzle-sprite:focus,
+.puzzle-sprite:focus polygon{
+  stroke: rgba(154,208,255,0.35);
+  fill: rgba(154,208,255,0.14);
+}
+
+/* Subtle periodic pulse to indicate interactivity. We animate a soft fill glow so
+   the polygon looks like it's gently lighting up. It's slow and staggered per-element
+   to avoid sync noise. */
+@keyframes puzzle-pulse{
+  0%{ fill: rgba(154,208,255,0); filter: blur(0px); }
+  35%{ fill: rgba(154,208,255,0.18); filter: blur(2px); }
+  70%{ fill: rgba(154,208,255,0.08); filter: blur(1px); }
+  100%{ fill: rgba(154,208,255,0); filter: blur(0px); }
+}
+
+/* Apply the pulse animation to polygons (we set timing/delay inline in JS). */
+.puzzle-sprite.pulsing,
+.puzzle-sprite[pulse] {
+  /* Marker classes/attributes for tooling; optimize for fill/opacity changes */
+  will-change: fill, opacity, filter;
+}
+
+/* Pause pulse on hover/focus so the hover fill takes precedence */
+.puzzle-sprite:hover, .puzzle-sprite:focus, .puzzle-sprite:hover polygon, .puzzle-sprite:focus polygon{
+  animation-play-state: paused !important;
+}
+
+/* Distortion effect applied to the main image when a sprite is tapped.
+   We support two variants: one for when the image is centered using translateX(-50%)
+   (contain-mode), and the normal one. This prevents the animation from overriding
+   the centering translate which was causing the image to visibly jump 50% right.
+*/
+
+/* Normal distortion (no extra translate) */
+#forest-img.distort{animation:puzzle-distort 420ms ease}
+@keyframes puzzle-distort{
+  0%{filter:none;transform:scale(1) rotate(0deg);}
+  30%{filter:blur(2px) saturate(1.5) contrast(1.2) hue-rotate(10deg);transform:scale(1.02) rotate(0.2deg);}
+  70%{filter:blur(1px) saturate(1.1) contrast(1.05) hue-rotate(-6deg);transform:scale(1.01) rotate(-0.15deg);}
+  100%{filter:none;transform:scale(1) rotate(0deg);}
+}
+
+/* Distortion when the image is centered with translateX(-50%). Each keyframe
+   repeats the translateX so the centering transform is preserved. */
+#forest-img.contain-mode.distort{animation:puzzle-distort-contain 420ms ease}
+@keyframes puzzle-distort-contain{
+  0%{filter:none;transform:translateX(-50%) scale(1) rotate(0deg);}
+  30%{filter:blur(2px) saturate(1.5) contrast(1.2) hue-rotate(10deg);transform:translateX(-50%) scale(1.02) rotate(0.2deg);}
+  70%{filter:blur(1px) saturate(1.1) contrast(1.05) hue-rotate(-6deg);transform:translateX(-50%) scale(1.01) rotate(-0.15deg);}
+  100%{filter:none;transform:translateX(-50%) scale(1) rotate(0deg);}
+}

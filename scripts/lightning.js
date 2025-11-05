@@ -155,7 +155,7 @@
   setTimeout(scheduleNext, 800 + Math.random() * 1600);
 
   // Ambient rain support (uses Web Audio API for gapless looping; falls back to HTMLAudio)
-  const rainSrc = 'sounds/forest-rain.mp3';
+  const rainSrc = 'sounds/forest-rain-2.mp3';
   let rainPlaying = false;
 
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -302,5 +302,9 @@
   });
 
   // expose a manual trigger for testing from the console: window.__lightning.strike()
-  window.__lightning = Object.assign(window.__lightning || {}, { strike: doStrike, playThunder, rain: { start: startRain, stop: stopRain, toggle: toggleRain, isPlaying: ()=>rainPlaying } });
+  window.__lightning = Object.assign(window.__lightning || {}, { 
+    strike: doStrike, 
+    playThunder, 
+    rain: { start: startRain, stop: stopRain, toggle: toggleRain, isPlaying: ()=>rainPlaying }
+  });
 })();

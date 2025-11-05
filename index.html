@@ -9,15 +9,29 @@
 <body>
   <main>
     <div class="image-wrap">
-      <img src="images/forest.png" alt="Forest" id="forest-img">
+  <img src="images/forest.png" alt="Forest" id="forest-img" draggable="false" ondragstart="return false;">
+      <!-- spider eyes container (absolute positioned relative to image) -->
+      <div class="spider-eyes" aria-hidden="true">
+        <!-- eyes are added/positioned by JS -->
+        <img src="images/eyes_small.png" class="eye-pair" alt="">
+        <img src="images/eyes_small.png" class="eye-pair" alt="">
+        <img src="images/eyes_small.png" class="eye-pair" alt="">
+      </div>
     </div>
   </main>
   <!-- lightning flash overlay (added for lightning/strike effect) -->
   <div id="flash" aria-hidden="true"></div>
 
-  <!-- rain toggle button (optional) -->
-  <button id="rain-toggle" class="rain-toggle" aria-pressed="true" title="Toggle ambient rain">🌧️ Rain: On</button>
+  <!-- floating control buttons (rain + puzzle) -->
+  <div class="floating-controls" aria-hidden="false">
+    <button id="rain-toggle" class="rain-toggle" aria-pressed="true" title="Toggle ambient rain">🌧️ Rain: On</button>
+    <button id="puzzle-toggle" class="rain-toggle" aria-pressed="false" title="Play puzzle melody">🎵 Puzzle: Off</button>
+  </div>
 
   <script src="scripts/lightning.js"></script>
+  <script src="scripts/image-fit.js"></script>
+  <script src="scripts/eyes.js"></script>
+  <script src="scripts/puzzle.js"></script>
+  <script src="scripts/puzzle-ui.js"></script>
 </body>
 </html>
