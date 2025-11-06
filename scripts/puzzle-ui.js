@@ -11,11 +11,11 @@
   // Define the clickable areas as polygons with absolute coordinates
   const polygons = [
     // Example polygons - replace with your actual coordinates
-    [[343,469], [360,558], [299,649], [325, 705], [428, 570], [388, 440]], // First area
-    [[409,206], [603,328], [723,210], [758,232],  [688,313], [604,368], [481,333],[383,241]], // Second area
-    [[1236,863], [1332,766], [1373,580], [1327,440], [1375,428], [1407,660], [1361,801], [1282,895]], // Third area
-    [[1633,730], [1704,599], [1822,420], [1865,443], [1779,589], [1673,771]], // Fourth area
-    [[1582,252], [1710,7], [1814,-75], [1865,-60], [1760,64], [1626,274]]  // Fifth area
+    [[253,469], [270,558], [209,649], [235, 705], [338, 570], [298, 440]], // First area
+    [[279,226], [473,348], [593,230], [628,252],  [558,333], [474,388], [351,353],[253,261]], // Second area
+    [[946,803], [1042,706], [1083,520], [1037,380], [1085,368], [1117,600], [1071,741], [992,835]], // Third area
+    [[1263,700], [1334,569], [1452,390], [1495,413], [1409,559], [1303,741]], // Fourth area
+    [[1252,292], [1380,47], [1384,-35], [1535,-20], [1430,104], [1296,314]]  // Fifth area
   ];
 
   // Note names in the same order as the puzzle's note map
@@ -44,28 +44,64 @@
   function updateSVGSize(){
     if(!img) return;
     
-    // Get the actual image dimensions (1920x1080)
-    const IMAGE_WIDTH = 1920;
-    const IMAGE_HEIGHT = 1080;
+    // Get the actual intrinsic image dimensions
+    const IMAGE_WIDTH = img.naturalWidth || 1920;
+    const IMAGE_HEIGHT = img.naturalHeight || 1080;
     
-    // Get current image display size while maintaining aspect ratio
+    // Get the img element's bounding box (this includes the whole element, not just visible image)
     const imgRect = img.getBoundingClientRect();
     
-    // Set SVG to match the actual displayed image size
-    svg.setAttribute('width', imgRect.width);
-    svg.setAttribute('height', imgRect.height);
+    // Calculate how the image is actually displayed with object-fit: contain
+    const imgAspect = IMAGE_WIDTH / IMAGE_HEIGHT;
+    const containerAspect = imgRect.width / imgRect.height;
     
-    // Critical: Set viewBox to the original image dimensions
-    // This ensures polygon coordinates (based on 1920x1080) map correctly
+    let actualWidth, actualHeight, offsetX, offsetY;
+    
+    if (containerAspect > imgAspect) {
+      // Container is wider - image is constrained by height, black bars on sides
+      actualHeight = imgRect.height;
+      actualWidth = actualHeight * imgAspect;
+      offsetX = (imgRect.width - actualWidth) / 2;
+      offsetY = 0;
+    } else {
+      // Container is taller - image is constrained by width, black bars on top/bottom
+      actualWidth = imgRect.width;
+      actualHeight = actualWidth / imgAspect;
+      offsetX = 0;
+      offsetY = (imgRect.height - actualHeight) / 2;
+    }
+    
+    // Debug logging
+    console.log('SVG Update:', {
+      imgElementSize: `${imgRect.width.toFixed(1)}x${imgRect.height.toFixed(1)}`,
+      actualImageSize: `${actualWidth.toFixed(1)}x${actualHeight.toFixed(1)}`,
+      offset: `${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}`,
+      imgElementPos: `${imgRect.left.toFixed(1)}, ${imgRect.top.toFixed(1)}`
+    });
+    
+    // Set viewBox to the intrinsic image dimensions
+    // Polygon coordinates are in this coordinate space
     svg.setAttribute('viewBox', `0 0 ${IMAGE_WIDTH} ${IMAGE_HEIGHT}`);
     
-    // Position SVG to exactly cover the image
-    svg.style.position = 'absolute';
-    svg.style.left = '50%';
-    svg.style.top = '50%';
-    svg.style.width = imgRect.width + 'px';
-    svg.style.height = imgRect.height + 'px';
-    svg.style.transform = 'translate(-50%, -50%)';
+    // CRITICAL: preserveAspectRatio='none' makes the viewBox stretch to fill the SVG exactly
+    // Since we're sizing the SVG to match the displayed image's aspect ratio, this works perfectly
+    svg.setAttribute('preserveAspectRatio', 'none');
+    
+    // Position SVG relative to the viewport (not the img element)
+    // We need to account for both the img element position AND the internal offset
+    const absoluteLeft = imgRect.left + offsetX;
+    const absoluteTop = imgRect.top + offsetY;
+    
+    svg.style.position = 'fixed';
+    svg.style.left = absoluteLeft + 'px';
+    svg.style.top = absoluteTop + 'px';
+    svg.style.width = actualWidth + 'px';
+    svg.style.height = actualHeight + 'px';
+    svg.style.pointerEvents = 'none';
+    
+    // Remove attribute dimensions to avoid conflicts
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
   }
 
   // Update SVG size on resize and when the image loads
@@ -73,9 +109,17 @@
   window.addEventListener('orientationchange', updateSVGSize);
   if(img){
     img.addEventListener('load', updateSVGSize);
-    // if already loaded
-    if(img.complete) setTimeout(updateSVGSize, 20);
+    // if already loaded, wait a bit for image-fit.js to run first
+    if(img.complete){
+      setTimeout(updateSVGSize, 50);
+      setTimeout(updateSVGSize, 150);
+    }
   }
+
+  // Also update when the window loads (ensures all scripts have run)
+  window.addEventListener('load', () => {
+    setTimeout(updateSVGSize, 50);
+  });
 
   function playNoteFile(noteName){
     // console.log('Playing note:', noteName);
@@ -211,7 +255,9 @@
     svg.appendChild(poly);
   });
 
-  // initial sizing
+  // initial sizing - call multiple times to ensure it catches after image-fit.js runs
   setTimeout(updateSVGSize, 30);
+  setTimeout(updateSVGSize, 100);
+  setTimeout(updateSVGSize, 200);
 
 })();

@@ -8,32 +8,34 @@
       const vh = window.innerHeight;
       const iw = img.naturalWidth || img.width;
       const ih = img.naturalHeight || img.height;
-      // If the image intrinsic width is smaller than the viewport width, avoid upscaling.
-      if(iw > 0 && iw < vw){
-        // Use contain so image fits without upscaling and is centered
-        img.style.width = 'auto';
-        img.style.height = '100vh';
-        img.style.objectFit = 'contain';
-        img.style.position = 'relative';
-        img.style.left = '50%';
-        img.style.transform = 'translateX(-50%)';
-        // mark that the image is centered using translateX so animations can preserve it
-        img.classList.add('contain-mode');
-      } else {
-        // Use cover to fill and crop as before
-        img.style.width = '100vw';
-        img.style.height = '100vh';
-        img.style.objectFit = 'cover';
-        img.style.position = '';
-        img.style.left = '';
-        img.style.transform = '';
-        img.classList.remove('contain-mode');
-      }
-    }catch(e){ /* ignore */ }
+      
+      // Use contain mode to show full image with black bars (letterboxing/pillarboxing)
+      // instead of cropping the image
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'contain';
+      img.style.position = 'absolute';
+      img.style.left = '50%';
+      img.style.top = '50%';
+      img.style.transform = 'translate(-50%, -50%)';
+      img.classList.add('contain-mode');
+      
+      // Force hardware acceleration on tablets
+      img.style.webkitTransform = 'translate(-50%, -50%) translateZ(0)';
+      img.style.backfaceVisibility = 'hidden';
+      img.style.webkitBackfaceVisibility = 'hidden';
+      
+    }catch(e){ 
+      console.error('Image adjust error:', e);
+    }
   }
 
   img.addEventListener('load', adjust);
   window.addEventListener('resize', adjust);
+  window.addEventListener('orientationchange', adjust);
+  
   // run once if already loaded
   if(img.complete) setTimeout(adjust, 20);
+  // Also run after a delay to ensure proper rendering on tablets
+  setTimeout(adjust, 100);
 })();

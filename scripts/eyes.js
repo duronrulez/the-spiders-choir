@@ -2,6 +2,10 @@
 const eyePairs = document.querySelectorAll('.eye-pair');
 let eyeIntervals = [];
 
+// Get references to image and eyes container
+const img = document.getElementById('forest-img');
+const eyesContainer = document.querySelector('.spider-eyes');
+
 // Define safe points for eye placement [x, y, scale] as percentages
 // scale is relative to base size (1.0 = 100%, 0.5 = 50%, 1.5 = 150%)
 
@@ -52,6 +56,59 @@ const safePoints = [
   [53.2, 58.9, 0.5],  
   [45.2, 63.7, 0.5],  
 ];
+
+// Update eyes container to match actual image display area
+function updateEyesContainer(){
+  if(!img || !eyesContainer) return;
+  
+  // Get the actual intrinsic image dimensions
+  const IMAGE_WIDTH = img.naturalWidth || 1920;
+  const IMAGE_HEIGHT = img.naturalHeight || 1080;
+  
+  // Get the img element's bounding box
+  const imgRect = img.getBoundingClientRect();
+  
+  // Calculate how the image is actually displayed with object-fit: contain
+  const imgAspect = IMAGE_WIDTH / IMAGE_HEIGHT;
+  const containerAspect = imgRect.width / imgRect.height;
+  
+  let actualWidth, actualHeight, offsetX, offsetY;
+  
+  if (containerAspect > imgAspect) {
+    // Container is wider - image is constrained by height, black bars on sides
+    actualHeight = imgRect.height;
+    actualWidth = actualHeight * imgAspect;
+    offsetX = (imgRect.width - actualWidth) / 2;
+    offsetY = 0;
+  } else {
+    // Container is taller - image is constrained by width, black bars on top/bottom
+    actualWidth = imgRect.width;
+    actualHeight = actualWidth / imgAspect;
+    offsetX = 0;
+    offsetY = (imgRect.height - actualHeight) / 2;
+  }
+  
+  // Position the eyes container using fixed positioning relative to viewport
+  const absoluteLeft = imgRect.left + offsetX;
+  const absoluteTop = imgRect.top + offsetY;
+  
+  eyesContainer.style.position = 'fixed';
+  eyesContainer.style.left = absoluteLeft + 'px';
+  eyesContainer.style.top = absoluteTop + 'px';
+  eyesContainer.style.width = actualWidth + 'px';
+  eyesContainer.style.height = actualHeight + 'px';
+}
+
+// Update on resize and orientation change
+window.addEventListener('resize', updateEyesContainer);
+window.addEventListener('orientationchange', updateEyesContainer);
+if(img){
+  img.addEventListener('load', updateEyesContainer);
+  if(img.complete) setTimeout(updateEyesContainer, 20);
+}
+
+// Initial update
+setTimeout(updateEyesContainer, 30);
 
 // Click coordinate tracking
 function handleClick(e) {
