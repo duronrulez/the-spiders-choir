@@ -38,6 +38,39 @@
   // Track taps
   let taps = [];
 
+  // Get progress pip elements
+  const progressPips = document.querySelectorAll('.progress-pip');
+
+  // Progress pip management
+  function updateProgressPips(){
+    progressPips.forEach((pip, index) => {
+      pip.classList.remove('filled', 'success', 'failure');
+      if(index < taps.length){
+        pip.classList.add('filled');
+      }
+    });
+  }
+
+  function showPuzzleSuccess(){
+    progressPips.forEach(pip => {
+      pip.classList.remove('filled', 'failure');
+      pip.classList.add('success');
+    });
+  }
+
+  function showPuzzleFailure(){
+    progressPips.forEach(pip => {
+      pip.classList.remove('filled', 'success');
+      pip.classList.add('failure');
+    });
+    // Reset after animation
+    setTimeout(() => {
+      progressPips.forEach(pip => {
+        pip.classList.remove('failure');
+      });
+    }, 1000);
+  }
+
   const img = document.getElementById('forest-img');
 
   // Helper: update SVG size to match image
@@ -175,6 +208,10 @@
     playNoteFile(noteName);
     triggerDistort();
     taps.push(noteName);
+    
+    // Update progress pips
+    updateProgressPips();
+    
     console.log('Puzzle tap:', noteName, '(', taps.length, '/', melodyNames.length, ')');
 
     if(taps.length >= melodyNames.length){
@@ -182,6 +219,7 @@
       const ok = taps.join(',') === melodyNames.join(',');
       if(ok) {
         console.log('Puzzle solved! Sequence matched.');
+        showPuzzleSuccess();
         // Call the puzzle.js API if available. Use a safe check because puzzle.js
         // may not be loaded in some contexts (or may be blocked by autoplay policies).
         setTimeout(() => {
@@ -194,11 +232,15 @@
         }, 1000);
       } else {
         console.log('Puzzle failed. Sequence did not match. Sequence was:', taps.join(', '), '. Expected:', melodyNames.join(', '));
+        showPuzzleFailure();
         // play failure sound
         setTimeout(() => playFeedback('puzzle-failed.mp3'), 800);
       }
       // reset taps for next attempt
-      taps = [];
+      setTimeout(() => {
+        taps = [];
+        updateProgressPips();
+      }, ok ? 2000 : 1200); // Wait longer for success to show green pips
     }
   }
 
