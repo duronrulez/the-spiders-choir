@@ -72,12 +72,12 @@
     }
     
     // Debug logging
-    console.log('SVG Update:', {
-      imgElementSize: `${imgRect.width.toFixed(1)}x${imgRect.height.toFixed(1)}`,
-      actualImageSize: `${actualWidth.toFixed(1)}x${actualHeight.toFixed(1)}`,
-      offset: `${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}`,
-      imgElementPos: `${imgRect.left.toFixed(1)}, ${imgRect.top.toFixed(1)}`
-    });
+    // console.log('SVG Update:', {
+      // imgElementSize: `${imgRect.width.toFixed(1)}x${imgRect.height.toFixed(1)}`,
+      // actualImageSize: `${actualWidth.toFixed(1)}x${actualHeight.toFixed(1)}`,
+      // offset: `${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}`,
+      // imgElementPos: `${imgRect.left.toFixed(1)}, ${imgRect.top.toFixed(1)}`
+    // });
     
     // Set viewBox to the intrinsic image dimensions
     // Polygon coordinates are in this coordinate space
